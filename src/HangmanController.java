@@ -3,29 +3,30 @@ import java.util.Scanner;
 public class HangmanController {
 
   public static void main(String[] args) {
-    WordChooser wc = new WordChooser("src/engDictionary.txt");
-    String pickedWord = wc.pickWord();
-    HangmanDisplay display = new HangmanDisplay(pickedWord);
+    WordChooser wc = DictionaryReader.parseDictionary("src/engDictionary.txt");
+    PlayerProgressManager playerProgressManager =
+        new PlayerProgressManager(wc.pickInitialWord(), wc);
 
-    System.out.println("Welcome to *using spooky voice*  EVIL hangman");
+    System.out.println("Welcome to *using spooky voice*  you game of hangman, begin if you dare.");
 
     boolean gameFinished = false;
     int bad_guess_limit = 8;
     int badGuesses = 0;
 
     while (!gameFinished) {
-      display.displayGame();
+      Display.displayGame(playerProgressManager.getUserGuessProgress(),
+          playerProgressManager.getGuessedLetters());
 
       System.out.println("Guess a letter\n");
       Scanner scnr = new Scanner(System.in);
       String playerGuess = scnr.next();
 
-      if (!display.handleGuess(playerGuess)) {
+      if (!playerProgressManager.handleGuess(playerGuess)) {
         System.out.println("Letter has been guessed already, try again");
         continue;
       }
 
-      if (!display.handleLetter(playerGuess)) {
+      if (!playerProgressManager.handleLetter(playerGuess)) {
         System.out.println("Bad Guess, letter not in word");
         badGuesses++;
         if (badGuesses >= bad_guess_limit) {
@@ -35,16 +36,16 @@ public class HangmanController {
         continue;
       }
 
-      // walk and fill in for display
-      display.fillInCorrectGuess(playerGuess);
+      playerProgressManager.fillInCorrectGuess(playerGuess);
 
-      if (display.isUserWordComplete()) {
+      if (playerProgressManager.checkIfUserGuessMatchesSolution()) {
         gameFinished = true;
       }
 
     }
 
-    display.displayGame();
+    Display.displayGame(playerProgressManager.getUserGuessProgress(),
+        playerProgressManager.getGuessedLetters());
     System.out.println("*** Woo you win ***");
   }
 
